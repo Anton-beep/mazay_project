@@ -37,13 +37,18 @@ class Data:
     _contacts_list: List[Contact]
 
     def read_data_from_file(self, file_name: str):
+        """Uploading information from database
+
+        Keyword arguments:
+        :keyword file_name --- name of db file
+        """
         if not os.path.exists(file_name):
             raise NameError(f'Cannot read "{file_name}"')
 
         self._contacts_list = list()
         with open(file_name, 'r', encoding='utf-8') as data_file:
             csv_reader = csv.reader(data_file, delimiter=',')
-            for id, row in enumerate(csv_reader):
+            for user_id, row in enumerate(csv_reader):
                 surname, name, father_name = row[0].split() + [None for _ in range(3 - len(row[0].split()))]
                 # using regex to check email
                 if row[2] == '':
@@ -62,7 +67,7 @@ class Data:
                 if surname is None:
                     raise ValueError('Surname has to be not None')
                 self._contacts_list.append(Contact(
-                    id,
+                    user_id,
                     surname,
                     name,
                     father_name,
