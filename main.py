@@ -3,6 +3,7 @@ import os
 import re
 from dataclasses import dataclass
 from typing import Optional, List
+from pprint import pprint
 
 DATA_FILE = 'data.txt'
 EMAIL_PATTERN = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
@@ -132,15 +133,48 @@ class Data:
         results = [element for element in self._contacts_list if element.phone is None or element.email is None]
         return results if results else None
 
+MAIN_QUESTIONS = """
+Print number
+0. Exit
+1. Find contacts by number
+2. Find contacts by email
+3. Find contacts by name (format: <name> <father_name> <surname> . If something is empty print "*", example: "Иван * Иванов")
+4. Find contacts without phone
+5. Find contacts without email
+6. Find contacts without email OR phone\n"""
 
-data = Data()
-data.read_data_from_file(DATA_FILE)
-print(data.find_by_name("Лев", "Николаевич", "Толстой"))
-print(data)
 
-mass = [data.find_no_email(), data.find_no_phone(), data.find_contacts_with_blank_lines()]
+def main():
+    data = Data()
+    data.read_data_from_file(DATA_FILE)
 
-print(*mass[int(input(f"What is the type of incomplete users you want to find?: \n\t"
-                      f"1. With blank email. \n\t"
-                      f"2. With blank phone number. \n\t"
-                      f"3. With any blank lines. \n")) - 1], sep='\n')
+    actions = [
+        data.find_by_number,
+        data.find_by_email,
+        data.find_by_name,
+        data.find_no_phone,
+        data.find_no_email,
+        data.find_contacts_with_blank_lines
+    ]
+    exit_flag = False
+
+    while not exit_flag:
+        in_number = int(input(MAIN_QUESTIONS))
+        if in_number == 0:
+            exit_flag = True
+            break
+        elif in_number in [1, 2]:
+            output = actions[in_number - 1](input())
+        elif in_number == 3:
+            output = actions[in_number - 1](*[None if el == '*' else el for el in input().split()])
+        elif in_number in range(4, 7):
+            output = actions[in_number - 1]()
+        else:
+            print('Please print number in range [0, 6]')
+            continue
+
+        pprint(list(map(str, output)))
+
+
+if __name__ == '__main__':
+    main()
