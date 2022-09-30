@@ -20,8 +20,13 @@ class Contact:
     email: Optional[str]
     phone: Optional[str]
 
-    def __repr__(self):
-        return f'({self.id}, {self.surname}, {self.name}, {self.father_name}, {self.email}, {self.phone})'
+    def __str__(self):
+        return f'id: {self.id}, ' \
+               f'contact:{" " + self.surname if self.surname is not None else ""}' \
+               f'{" " + self.name if self.name is not None else ""}' \
+               f'{" " + self.father_name if self.father_name is not None else ""}' \
+               f'{" " + self.email if self.email is not None else ""}' \
+               f'{" " + self.phone if self.phone is not None else ""}'
 
 
 class SingletonClass(object):
