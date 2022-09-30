@@ -3,7 +3,6 @@ import os
 import re
 from dataclasses import dataclass
 from typing import Optional, List
-from pprint import pprint
 
 DATA_FILE = 'data.txt'
 EMAIL_PATTERN = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
@@ -133,6 +132,7 @@ class Data:
         results = [element for element in self._contacts_list if element.phone is None or element.email is None]
         return results if results else None
 
+
 MAIN_QUESTIONS = """
 Print number
 0. Exit
@@ -173,7 +173,12 @@ def main():
             print('Please print number in range [0, 6]')
             continue
 
-        pprint(list(map(str, output)))
+        try:
+            print(*list(map(str, output)), sep="\n")
+        except TypeError:
+            print("\nNo results")
+
+        exit_flag = True if "no" == input("\ncontinue (y/n) \n") else False
 
 
 if __name__ == '__main__':
