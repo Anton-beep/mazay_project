@@ -20,6 +20,9 @@ class Contact:
     email: Optional[str]
     phone: Optional[str]
 
+    def __repr__(self):
+        return f'({self.id}, {self.surname}, {self.name}, {self.father_name}, {self.email}, {self.phone})'
+
 
 class SingletonClass(object):
     def __new__(cls):
