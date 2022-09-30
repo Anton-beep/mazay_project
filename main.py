@@ -35,17 +35,11 @@ class Data(SingletonClass):
     """
     _contacts_list: List[Contact]
 
-    def find_by_number(self, number: str) -> Optional[List[Contact]]:
-        """Finding contact by number.
-
-        Keyword arguments:
-        :keyword number --- target phone number
-        """
     def read_data_from_file(self, file_name: str):
         if not os.path.exists(file_name):
             raise NameError(f'Cannot read "{file_name}"')
 
-        _contacts_list = list()
+        self._contacts_list = list()
         with open(file_name, 'r', encoding='utf-8') as data_file:
             csv_reader = csv.reader(data_file, delimiter=',')
             for id, row in enumerate(csv_reader):
@@ -56,17 +50,17 @@ class Data(SingletonClass):
                 elif re.match(EMAIL_PATTERN, row[2]) is not None:
                     raise ValueError(f'Invalid email: {row[2]}')
                 else:
-                    email = row[2]
+                    email = row[2].lstrip()
                 # check phone number
                 if row[1] == '':
                     phone = None
                 elif not row[1][1:].replace('+', '').isnumeric():
                     raise ValueError(f'Invalid phone number: {row[1]}')
                 else:
-                    phone = row[1]
+                    phone = row[1].lstrip()
                 if surname is None:
                     raise ValueError('Surname has to be not None')
-                _contacts_list.append(Contact(
+                self._contacts_list.append(Contact(
                     id,
                     surname,
                     name,
@@ -75,7 +69,12 @@ class Data(SingletonClass):
                     phone
                 ))
 
-    def find_by_number(self, number: str) -> Optional[Contact]:
+    def find_by_number(self, number: str) -> Optional[List[Contact]]:
+        """Finding contact by number.
+
+        Keyword arguments:
+        :keyword number --- target phone number
+        """
         results = [element for element in self._contacts_list if element.phone == number]
         return results if results else None
 
