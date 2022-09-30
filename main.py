@@ -29,18 +29,8 @@ class Contact:
                f'{" " + self.phone if self.phone is not None else ""}'
 
 
-class SingletonClass(object):
-    """Parent class. Contains only one parameter"""
-    instance = None
-
-    def __new__(cls):
-        if not hasattr(cls, 'instance'):
-            cls.instance = super(SingletonClass, cls).__new__(cls)
-        return cls.instance
-
-
-class Data(SingletonClass):
-    """Singleton child class. Methods for operating with db information.
+class Data:
+    """Singleton class. Methods for operating with db information.
 
     _contacts_list -- contains collection of Contacts
     """
@@ -146,6 +136,7 @@ class Data(SingletonClass):
 data = Data()
 data.read_data_from_file(DATA_FILE)
 print(data.find_by_name("Лев", "Николаевич", "Толстой"))
+print(data)
 
 mass = [data.find_no_email(), data.find_no_phone(), data.find_contacts_with_blank_lines()]
 
