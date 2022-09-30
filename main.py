@@ -60,7 +60,7 @@ class Data:
                 # check phone number
                 if row[1] == '':
                     phone = None
-                elif not row[1][1:].replace('+', '').isnumeric():
+                elif not (row[1][1:].replace('+', '').isnumeric() and row[1][0] == '+'):
                     raise ValueError(f'Invalid phone number: {row[1]}')
                 else:
                     phone = row[1].lstrip()
@@ -216,6 +216,10 @@ def main():
             new_data = [None if el == '*' else el for el in input('write new data (format: <surname> <name> '
                                                                   '<father_name> <phone_number> <email> . If you '
                                                                   'want to skip some data print "*") \n').split()]
+            if not(new_data[3][0] == '+' and new_data[3][1:].isalnum()):
+                raise ValueError('invalid phone number')
+            if re.match(EMAIL_PATTERN, new_data[4]) is not None:
+                raise ValueError('invalid email')
             new_contact = Contact(contact_id, new_data[0], new_data[1], new_data[2], new_data[3], new_data[4])
             data.edit_by_id(contact_id, new_contact)
             continue
