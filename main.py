@@ -46,7 +46,7 @@ class Data(SingletonClass):
         with open(file_name, 'r', encoding='utf-8') as data_file:
             csv_reader = csv.reader(data_file, delimiter=',')
             for id, row in enumerate(csv_reader):
-                surname, name, father_name = row[0].split() + [None for i in range(3 - len(row[0].split()))]
+                surname, name, father_name = row[0].split() + [None for _ in range(3 - len(row[0].split()))]
                 # using regex to check email
                 if row[2] == '':
                     email = None
@@ -138,3 +138,10 @@ class Data(SingletonClass):
 data = Data()
 data.read_data_from_file(DATA_FILE)
 print(data.find_by_name("Лев", "Николаевич", "Толстой"))
+
+mass = [data.find_no_email(), data.find_no_phone(), data.find_contacts_with_blank_lines()]
+
+print(*mass[int(input(f"What is the type of incomplete users you want to find?: \n\t"
+                      f"1. With blank email. \n\t"
+                      f"2. With blank phone number. \n\t"
+                      f"3. With any blank lines. \n")) - 1], sep='\n')
