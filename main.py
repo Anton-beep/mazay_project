@@ -122,6 +122,35 @@ class Data:
 
         return result_objects if result_objects else None
 
+    def find_by_id(self, contact_id: int) -> Optional[List[Contact]]:
+        """Find contact by number"""
+        results = [element for element in self._contacts_list if element.id == contact_id]
+        if len(results) < 2:
+            return results if results else None
+        else:
+            raise Exception('duplicate id')
+
+    def edit_by_id(self, contact_id, new_contact: Contact):
+        """Edit contact by contact_id"""
+        # change contact in contacts_list
+        # find index of contact with id
+        for list_ind, el in enumerate(self._contacts_list):
+            if el.id == contact_id:
+                self._contacts_list[list_ind] = new_contact
+                break
+        # change in file
+        self.sync_list_with_file()
+
+    def sync_list_with_file(self):
+        """rewrite DATA_FILE with data from _contacts_list"""
+        with open(DATA_FILE, 'w', encoding='utf-8', newline='') as data_file:
+            writer = csv.writer(data_file, delimiter=',')
+            for el in self._contacts_list:
+                writer.writerow(
+                    [' '.join([element for element in [el.surname, el.name, el.father_name] if element is not None]),
+                     ' ' + el.phone if el.phone is not None else '',
+                     ' ' + el.email if el.email is not None else ''])
+
     def find_no_email(self) -> Optional[List[Contact]]:
         """Finding contact with blank email line."""
         results = [element for element in self._contacts_list if element.email is None]
@@ -146,7 +175,8 @@ Print number
 3. Find contacts by name (format: <name> <father_name> <surname> . If something is empty print "*", example: "Иван * Иванов")
 4. Find contacts without phone
 5. Find contacts without email
-6. Find contacts without email OR phone\n"""
+6. Find contacts without email OR phone
+7. Edit contact\n"""
 
 
 def main():
@@ -169,13 +199,28 @@ def main():
             exit_flag = True
             break
         elif in_number in [1, 2]:
+            print('write data:\n')
             output = actions[in_number - 1](input())
         elif in_number == 3:
+            print('write data:\n')
             output = actions[in_number - 1](*[None if el == '*' else el for el in input().split()])
         elif in_number in range(4, 7):
+            print('write data:\n')
             output = actions[in_number - 1]()
+        elif in_number == 7:
+            contact_id = int(input("write contact's id\n"))
+            if data.find_by_id(contact_id) is None:
+                print(f'No contact with id: {contact_id}')
+                continue
+            print(f'contact now -> {str(data.find_by_id(contact_id)[0])}')
+            new_data = [None if el == '*' else el for el in input('write new data (format: <surname> <name> '
+                                                                  '<father_name> <phone_number> <email> . If you '
+                                                                  'want to skip some data print "*") \n').split()]
+            new_contact = Contact(contact_id, new_data[0], new_data[1], new_data[2], new_data[3], new_data[4])
+            data.edit_by_id(contact_id, new_contact)
+            continue
         else:
-            print('Please print number in range [0, 6]')
+            print('Please print number in range [0, 7]')
             continue
 
         try:
@@ -183,7 +228,7 @@ def main():
         except TypeError:
             print("\nNo results")
 
-        exit_flag = True if "no" == input("\ncontinue (y/n) \n") else False
+        exit_flag = True if "n" == input("\ncontinue (y/n) \n") else False
 
 
 if __name__ == '__main__':
