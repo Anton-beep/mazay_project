@@ -98,15 +98,20 @@ class Data(SingletonClass):
         """
         result_objects: List[Contact] = []
 
-        target_line = f"{surname + ' ' if surname else ''}" \
-                      f"{name + ' ' if name else ' '}{father_name if father_name else ''}".rstrip()
-
         for element in self._contacts_list:
-            element_line = f"{element.surname + ' ' if element.surname else ''}" \
-                           f"{element.name + ' ' if element.name else ' '}" \
-                           f"{element.father_name if element.father_name else ''}".rstrip()
+            correct_flag = True
 
-            if element_line == target_line:
+            if surname is not None:
+                if element.surname != surname:
+                    correct_flag = False
+            if name is not None:
+                if element.name != name:
+                    correct_flag = False
+            if father_name is not None:
+                if element.father_name != father_name:
+                    correct_flag = False
+
+            if correct_flag:
                 result_objects.append(element)
 
         return result_objects if result_objects else None
@@ -129,3 +134,4 @@ class Data(SingletonClass):
 
 data = Data()
 data.read_data_from_file(DATA_FILE)
+print(data.find_by_name("Лев", "Николаевич", "Толстой"))
