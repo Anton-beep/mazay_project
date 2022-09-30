@@ -1,11 +1,24 @@
 import csv
 import os
-import re
 from dataclasses import dataclass
 from typing import Optional, List
 
 DATA_FILE = 'data.txt'
-EMAIL_PATTERN = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
+
+
+def is_valid_email(email: str) -> bool:
+    try:
+        str1, str2, str3 = email.split('@')[0], *email.split('@')[1].split('.')
+        if str1.isalpha() and str2.isalpha() and str3.isalpha():
+            return True
+    except Exception:
+        return False
+
+
+def is_valid_phone(number:str) -> bool:
+    if not (number[0] == '+' and 9 <= len(number[1:]) >= 11 and number[1:].isalnum()):
+        return False
+    return True
 
 
 @dataclass
@@ -53,14 +66,14 @@ class Data:
                 # using regex to check email
                 if row[2] == '':
                     email = None
-                elif re.match(EMAIL_PATTERN, row[2]) is not None:
+                elif not is_valid_email(row[2][1:]):
                     raise ValueError(f'Invalid email: {row[2]}')
                 else:
                     email = row[2].lstrip()
                 # check phone number
                 if row[1] == '':
                     phone = None
-                elif not (row[1][1:].replace('+', '').isnumeric() and row[1][1] == '+'):
+                elif not is_valid_phone(row[1][1:]):
                     raise ValueError(f'Invalid phone number: {row[1]}')
                 else:
                     phone = row[1].lstrip()
@@ -216,16 +229,16 @@ def main():
             new_data = [None if el == '*' else el for el in input('write new data (format: <surname> <name> '
                                                                   '<father_name> <phone_number> <email> . If you '
                                                                   'want to skip some data print "*") \n').split()]
-            if new_data[3] is not None and not(new_data[3][0] == '+' and new_data[3][1:].isalnum()):
+            if new_data[3] is not None and not is_valid_phone(new_data[3]):
                 print('invalid phone number')
                 continue
-            if new_data[4] is not None and re.match(EMAIL_PATTERN, new_data[4]) is not None:
+            if new_data[4] is not None and not is_valid_email(new_data[4]):
                 print('invalid email')
                 continue
             if new_data[0] is None:
                 print('No surname')
                 continue
-            new_contact = Contact(contact_id, new_data[0], new_data[1], new_data[2], new_data[3], new_data[4])
+            new_contact = Contact(contact_id, new_data[0], new_data[1], new_data[2], new_data[4], new_data[3])
             data.edit_by_id(contact_id, new_contact)
             continue
         else:
