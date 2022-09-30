@@ -10,6 +10,7 @@ EMAIL_PATTERN = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
 
 @dataclass
 class Contact:
+    id: int
     surname: str
 
     name: Optional[str]
@@ -35,7 +36,7 @@ class Data(SingletonClass):
         _contacts_list = list()
         with open(file_name, 'r', encoding='utf-8') as data_file:
             csv_reader = csv.reader(data_file, delimiter=',')
-            for row in csv_reader:
+            for id, row in enumerate(csv_reader):
                 surname, name, father_name = row[0].split() + [None for i in range(3 - len(row[0].split()))]
                 # using regex to check email
                 if row[2] == '':
@@ -54,6 +55,7 @@ class Data(SingletonClass):
                 if surname is None:
                     raise ValueError('Surname has to be not None')
                 _contacts_list.append(Contact(
+                    id,
                     surname,
                     name,
                     father_name,
