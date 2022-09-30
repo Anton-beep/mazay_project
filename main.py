@@ -37,13 +37,18 @@ class Data:
     _contacts_list: List[Contact]
 
     def read_data_from_file(self, file_name: str):
+        """Uploading information from database
+
+        Keyword arguments:
+        :keyword file_name --- name of db file
+        """
         if not os.path.exists(file_name):
             raise NameError(f'Cannot read "{file_name}"')
 
         self._contacts_list = list()
         with open(file_name, 'r', encoding='utf-8') as data_file:
             csv_reader = csv.reader(data_file, delimiter=',')
-            for id, row in enumerate(csv_reader):
+            for user_id, row in enumerate(csv_reader):
                 surname, name, father_name = row[0].split() + [None for _ in range(3 - len(row[0].split()))]
                 # using regex to check email
                 if row[2] == '':
@@ -62,7 +67,7 @@ class Data:
                 if surname is None:
                     raise ValueError('Surname has to be not None')
                 self._contacts_list.append(Contact(
-                    id,
+                    user_id,
                     surname,
                     name,
                     father_name,
@@ -138,9 +143,8 @@ data.read_data_from_file(DATA_FILE)
 print(data.find_by_name("Лев", "Николаевич", "Толстой"))
 print(data)
 
-mass = [data.find_no_email(), data.find_no_phone(), data.find_contacts_with_blank_lines()]
-
-print(*mass[int(input(f"What is the type of incomplete users you want to find?: \n\t"
-                      f"1. With blank email. \n\t"
-                      f"2. With blank phone number. \n\t"
-                      f"3. With any blank lines. \n")) - 1], sep='\n')
+blank_users = [data.find_no_email(), data.find_no_phone(), data.find_contacts_with_blank_lines()]
+print(*blank_users[int(input(f"What is the type of incomplete users you want to find?: \n\t"
+                             f"1. With blank email. \n\t"
+                             f"2. With blank phone number. \n\t"
+                             f"3. With any blank lines. \n")) - 1], sep='\n')
