@@ -3,19 +3,22 @@ import os
 from dataclasses import dataclass
 from typing import Optional, List
 
-DATA_FILE = 'data.txt'
+DATA_FILE = input("Введите название файла базы данных\n")
 
 
 def is_valid_email(email: str) -> bool:
+    """Email check"""
     try:
         str1, str2, str3 = email.split('@')[0], *email.split('@')[1].split('.')
         if str1.isalpha() and str2.isalpha() and str3.isalpha():
             return True
-    except Exception:
+    except Exception as error:
+        print(error)
         return False
 
 
-def is_valid_phone(number:str) -> bool:
+def is_valid_phone(number: str) -> bool:
+    """Phone number check"""
     if not (number[0] == '+' and 9 <= len(number[1:]) >= 11 and number[1:].isalnum()):
         return False
     return True
@@ -44,19 +47,17 @@ class Contact:
 
 class Data:
     """Singleton class. Methods for operating with db information.
-
     _contacts_list -- contains collection of Contacts
     """
     _contacts_list: List[Contact]
 
     def read_data_from_file(self, file_name: str):
         """Uploading information from database
-
         Keyword arguments:
         :keyword file_name --- name of db file
         """
         if not os.path.exists(file_name):
-            raise NameError(f'Cannot read "{file_name}"')
+            raise NameError(f'Не получилось прочитать файл "{file_name}"')
 
         self._contacts_list = list()
         with open(file_name, 'r', encoding='utf-8') as data_file:
@@ -67,18 +68,18 @@ class Data:
                 if row[2] == '':
                     email = None
                 elif not is_valid_email(row[2][1:]):
-                    raise ValueError(f'Invalid email: {row[2]}')
+                    raise ValueError(f'Некорректный email: {row[2]}')
                 else:
                     email = row[2].lstrip()
                 # check phone number
                 if row[1] == '':
                     phone = None
                 elif not is_valid_phone(row[1][1:]):
-                    raise ValueError(f'Invalid phone number: {row[1]}')
+                    raise ValueError(f'Некорректный номер телефона: {row[1]}')
                 else:
                     phone = row[1].lstrip()
                 if surname is None:
-                    raise ValueError('Surname has to be not None')
+                    raise ValueError('Укажите пожалуйста Фамилию')
                 self._contacts_list.append(Contact(
                     user_id,
                     surname,
@@ -90,7 +91,6 @@ class Data:
 
     def find_by_number(self, number: str) -> Optional[List[Contact]]:
         """Finding contact by number.
-
         Keyword arguments:
         :keyword number --- target phone number
         """
@@ -99,7 +99,6 @@ class Data:
 
     def find_by_email(self, email: str) -> Optional[List[Contact]]:
         """Finding contact by email.
-
         Keyword arguments:
         :keyword email --- target email
         """
@@ -109,7 +108,6 @@ class Data:
     def find_by_name(self, name: Optional[str], father_name: Optional[str], surname: Optional[str]) \
             -> Optional[List[Contact]]:
         """Finding contact by name.
-
         Keyword arguments(all arguments are optionally, but one must be not None):
         :keyword name ---       target name
         :keyword father_name -- target father_name
@@ -179,20 +177,23 @@ class Data:
         results = [element for element in self._contacts_list if element.phone is None or element.email is None]
         return results if results else None
 
+    def all_contacts(self) -> Optional[List[Contact]]:
+        return self._contacts_list
+
 
 MAIN_QUESTIONS = """
-Print number
-0. Exit
-1. Find contacts by number
-2. Find contacts by email
-3. Find contacts by name (format: <name> <father_name> <surname> . If something is empty print "*", example: "Иван * Иванов")
-4. Find contacts without phone
-5. Find contacts without email
-6. Find contacts without email OR phone
-7. Edit contact\n"""
+Напишите номер команды
+\t0. Выход
+\t1. Найти контакт по телефону
+\t2. Найти контакт по почте
+\t3. Найти контакт по имени
+\t4. Найти контакты с отсутсвующими параметрами(email/номер телефона)
+\t5. Вывести список всех контактов
+\t6. Изменить контакт\n"""
 
 
 def main():
+    """Main function"""
     data = Data()
     data.read_data_from_file(DATA_FILE)
 
@@ -212,45 +213,75 @@ def main():
             exit_flag = True
             break
         elif in_number in [1, 2]:
-            print('write data:\n')
+            if in_number == 1:
+                print('Напишите номер телефона:\n')
+            else:
+                print('Напишите почту пользователя:\n')
+
             output = actions[in_number - 1](input())
         elif in_number == 3:
-            print('write data:\n')
-            output = actions[in_number - 1](*[None if el == '*' else el for el in input().split()])
-        elif in_number in range(4, 7):
-            print('write data:\n')
-            output = actions[in_number - 1]()
-        elif in_number == 7:
-            contact_id = int(input("write contact's id\n"))
+            surname = input('Напишите фамилию (пустая строка, если нет)\n')
+            name = input('Напишите имя (пустая строка, если нет)\n')
+            father_name = input('Напишите отчество (пустая строка, если нет)\n')
+
+            surname = None if surname == '' else surname
+            name = None if name == '' else name
+            father_name = None if father_name == '' else father_name
+
+            output = actions[2](name, father_name, surname)
+        elif in_number == 4:
+            action = int(input("Укажите цифру из списка:\n"
+                               "\t1. Найти пользователей без номера телефона\n"
+                               "\t2. Найти пользователей без почтового адреса\n"
+                               "\t3. Найти пользователей без телефона или без почты\n"))
+
+            output = actions[action + 2]()
+        elif in_number == 5:
+            print("Все пользователи:\n")
+            output = data.all_contacts()
+        elif in_number == 6:
+            contact_id = int(input("Напишите id контакта:\n"))
             if data.find_by_id(contact_id) is None:
-                print(f'No contact with id: {contact_id}')
+                print(f'Контакт с id({contact_id}) не найден: \n')
                 continue
-            print(f'contact now -> {str(data.find_by_id(contact_id)[0])}')
-            new_data = [None if el == '*' else el for el in input('write new data (format: <surname> <name> '
-                                                                  '<father_name> <phone_number> <email> . If you '
-                                                                  'want to skip some data print "*") \n').split()]
-            if new_data[3] is not None and not is_valid_phone(new_data[3]):
-                print('invalid phone number')
+            print(f'Контакт сейчас выглядит так -> {str(data.find_by_id(contact_id)[0])}')
+
+            surname = ''
+            while surname == '':
+                surname = input('Напишите фамилию (не может быть пустым)\n')
+
+            name = input('Напишите имя (пустая строка, если нет)\n')
+            father_name = input('Напишите отчество (пустая строка, если нет)\n')
+            phone_number = input('Напишите номер телефона (пустая строка, если нет)\n')
+            email = input('Напишите почту (пустая строка, если нет)\n')
+
+            if name == '':
+                name = None
+            if father_name == '':
+                father_name = None
+            if phone_number == '':
+                phone_number = None
+            if email == '':
+                email = None
+
+            if phone_number is not None and not is_valid_phone(phone_number):
+                print('Некорректный формат номера телефона')
                 continue
-            if new_data[4] is not None and not is_valid_email(new_data[4]):
-                print('invalid email')
+            if email is not None and not is_valid_email(email):
+                print('Некорректный формат электронной почты')
                 continue
-            if new_data[0] is None:
-                print('No surname')
-                continue
-            new_contact = Contact(contact_id, new_data[0], new_data[1], new_data[2], new_data[4], new_data[3])
+
+            new_contact = Contact(contact_id, surname, name, father_name, email, phone_number)
             data.edit_by_id(contact_id, new_contact)
             continue
         else:
-            print('Please print number in range [0, 7]')
+            print('Некорректный номер')
             continue
 
         try:
             print(*list(map(str, output)), sep="\n")
         except TypeError:
-            print("\nNo results")
-
-        exit_flag = True if "n" == input("\ncontinue (y/n) \n") else False
+            print("\nРезультатов не найдено")
 
 
 if __name__ == '__main__':
